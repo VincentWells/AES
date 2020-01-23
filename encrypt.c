@@ -11,17 +11,9 @@ uint8_t* encrypt_cipher(uint8_t* text, uint8_t* w, uint8_t Nr) {
     for(int i = 0; i < Nr - 1; i++) {
         sub_bytes(state);
 
-        // printf("post sub\n");
-        // print_hex(state, 16);
-
         shift_rows(state);
 
-        // printf("post shift\n");
-        // print_hex(state, 16);
-
         mix_columns(state);
-        // printf("post mix\n");
-        // print_hex(state, 16);
 
         printf("round %d\n", i+1);
         memcpy(round_key, w + (i + 1) * 16, 16);
@@ -29,8 +21,6 @@ uint8_t* encrypt_cipher(uint8_t* text, uint8_t* w, uint8_t Nr) {
 
         add_round_key(state, round_key);
 
-        // printf("post rk\n");
-        // print_hex(state, 16);
     }
 
     sub_bytes(state);
@@ -97,35 +87,24 @@ int shift_rows(uint8_t* state) {
 
 int mix_columns(uint8_t* state) {
     uint8_t word [4];
+
     //col 1
-    // for(int i = 0; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
     memcpy(word, state, 4);
     mix_column_op(word);
     memcpy(state, word, 4);
-    // print_hex(state, 4);
 
     //col2
-    // for(int i = 1; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
     memcpy(word, state + 4, 4);
     mix_column_op(word);
     memcpy(state + 4, word, 4);
+    
     //col3
-    // for(int i = 2; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
     memcpy(word, state + 8, 4);
     mix_column_op(word);
     memcpy(state + 8, word, 4);
+    
     //col4
-    // for(int i = 3; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
     memcpy(word, state + 12, 4);
-    // print_hex(word, 4);
     mix_column_op(word);
     memcpy(state + 12, word, 4);
     return 1;
@@ -143,31 +122,7 @@ int mix_column_op(uint8_t* word) {
     return 1;
 }
 
-//this doesn't work
-uint8_t multiply(uint8_t a, uint8_t b) {
-    //credit: https://en.wikipedia.org/wiki/Rijndael_key_schedule
-
-    uint16_t product = a * b;
-    return product % 283; // 283 is equiv. to x^8 + x^4 + x^3 + x + 1
-}
-
 int add_round_key(uint8_t* state, uint8_t* round_key) {
-    //col 1
-    // for(int i = 0; i < 16; i += 4) {
-    //     state[i] ^= round_key[i];
-    // }
-    // //col2
-    // for(int i = 1; i < 16; i += 4) {
-    //     state[i] ^= round_key[1 + i / 4];
-    // }
-    // //col3
-    // for(int i = 2; i < 16; i += 4) {
-    //     state[i] ^= round_key[2 + i / 4];
-    // }
-    // //col4
-    // for(int i = 3; i < 16; i += 4) {
-    //     state[i] ^= round_key[3 + i / 4];
-    // }
     for(int i = 0; i < 16; i++) {
         state[i] ^= round_key[i];
     }
@@ -175,9 +130,6 @@ int add_round_key(uint8_t* state, uint8_t* round_key) {
 
 int print_hex(uint8_t* t, int size) {
     for(int i = 0; i < size; i++) {
-        // if(t[i] < 0xa) {
-        //     printf("0");
-        // }
         printf("%02x", t[i]);
     }
     printf("\n");

@@ -35,43 +35,29 @@ int convert_hex_to_bytes(char* hex_str, uint8_t* byte_array, int size) {
 }
 
 int key_expansion(uint8_t* key, uint16_t key_len, uint8_t* w, uint8_t num_of_rounds) {
-    uint8_t Nk = key_len / 4; //512 / 4 < 256 ==> this is a safe op. Storing this val is faster, uses another byte of mem.
+    
+    //512 / 4 < 256 ==> this is a safe op. Storing this val is faster, uses another byte of mem.
+    uint8_t Nk = key_len / 4;
+
     uint8_t temp[4];
-    memcpy(w, key, key_len); //I don't split the key into 4 byte words here, just deal with that as a flattened array for efficiency's sake
+    
+    //I don't split the key into 4 byte words here, just deal with that as a flattened array for efficiency's sake
+    memcpy(w, key, key_len); 
+
     for(int i = Nk; i < 4 * (num_of_rounds + 1); i++) {
-        memcpy(temp, &w[4*(i-1)], 4); //copy the last word in w into temp
-        // printf("original temp\n");
-        // print_hex(temp, 4);
+        //copy the last word in w into temp
+        memcpy(temp, &w[4*(i-1)], 4); 
+
         if((i % Nk ) == 0) { //
             rot_word(temp);
-            // printf("rotword temp\n");
-            // print_hex(temp, 4);
-
             sub_word(temp);
-            // printf("subword temp\n");
-
-            // print_hex(temp, 4);
-
             temp[0] ^= Rcon[i / Nk];
-            // printf("xored temp\n");
-
-            // print_hex(temp, 4);
         } else if (Nk > 6 && i % Nk == 4) {
             sub_word(temp);
-            // printf("subword temp\n");
-
-            // print_hex(temp, 4);
-
         }
         for(int j = 0; j < 4; j++) {
             w[i*4 + j] = w[(i-Nk)*4 + j] ^ temp[j];
         }
-        // printf("w at i - Nk\n");
-        // print_hex(&w[(i-Nk*4)], 4);
-
-        // printf("final w at i\n");
-        // print_hex(&w[i*4],4);
-
     }
     return 1;
 }
@@ -81,7 +67,8 @@ int main(int argc, char** argv) {
         puts("Error: invalid arguments.  Proper format is: executable [e|d] [message] [key]");
         exit(0);
     }
-    int encrypt; //used as boolean to denote encrypt or decrypt
+    //used as boolean to denote encrypt or decrypt
+    uint8_t encrypt; 
     if(strlen(argv[1]) != 1 || (argv[1][0] != 'e' && argv[1][0] != 'd')) {
         puts("Error: invalid arg1.  First argument must be \'e\' or \'d\'");
         exit(0);
@@ -96,9 +83,11 @@ int main(int argc, char** argv) {
         //save the message into input_text
         convert_hex_to_bytes(argv[2], input_text, 16);
     }
-    uint8_t* key; //store input key, size not fixed
-    uint8_t key_len = strlen(argv[3]) / 2; //this is just set as uint8_t for efficiency, max allowed value is 32
-    // printf("%u\n", key_len);
+    
+    //store input key, size not fixed
+    uint8_t* key; 
+
+    uint8_t key_len = strlen(argv[3]) / 2;
     uint8_t num_of_rounds;
     switch(key_len) {
     case 16: // 128 bits
@@ -117,20 +106,16 @@ int main(int argc, char** argv) {
     key = malloc(key_len);
 
     convert_hex_to_bytes(argv[3], key, key_len);
-    // print_hex(key, key_len);
 
     uint8_t* w = malloc(16*(num_of_rounds + 1));
     key_expansion(key, key_len, w, num_of_rounds);
 
     char* output;
     if(encrypt) {
-        output = encrypt_cipher(input_text, w, num_of_rounds); //Technically less efficient to return ptr than pass and write into it, iirc
+        output = encrypt_cipher(input_text, w, num_of_rounds);
     } else {
         output = decrypt_cipher(input_text, w, num_of_rounds);
     }
     print_hex(output, 16);
-
-    // printf("%s\n", output);
-
     return 0;
 }

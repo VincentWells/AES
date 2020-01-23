@@ -31,7 +31,7 @@ uint8_t* decrypt_cipher(uint8_t* text, uint8_t* w, uint8_t Nr) {
 
 int inv_shift_rows(uint8_t* state) {
     //2nd row
-    uint8_t temp = state[1];  //there are complex ways to use fewer temps, but the overhead is miniscule
+    uint8_t temp = state[1];  
     uint8_t temp2 = state[5];
     uint8_t temp3 = state[9];
     state[1] = state[13];
@@ -69,28 +69,18 @@ int inv_mix_columns(uint8_t* state) {
     memcpy(word, state, 4);
     inv_mix_column_op(word);
     memcpy(state, word, 4);
-    // print_hex(state, 4);
 
-    //col2
-    // for(int i = 1; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
     memcpy(word, state + 4, 4);
     inv_mix_column_op(word);
     memcpy(state + 4, word, 4);
     //col3
-    // for(int i = 2; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
+ 
     memcpy(word, state + 8, 4);
     inv_mix_column_op(word);
     memcpy(state + 8, word, 4);
     //col4
-    // for(int i = 3; i < 16; i += 4) {
-    //     word[i/4] = state[i];
-    // }
+
     memcpy(word, state + 12, 4);
-    // print_hex(word, 4);
     inv_mix_column_op(word);
     memcpy(state + 12, word, 4);
     return 1;
